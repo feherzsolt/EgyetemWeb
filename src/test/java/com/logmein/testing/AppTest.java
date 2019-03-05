@@ -2,6 +2,7 @@ package com.logmein.testing;
 
 import java.io.InputStream;
 import java.nio.file.FileSystems;
+import java.util.List;
 import java.util.Properties;
 import java.util.function.Consumer;
 
@@ -10,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -47,7 +49,7 @@ public class AppTest
 	    	webDriver.findElement(By.name("q")).sendKeys("Informatikai TanszékCsoport Szeged");
 	    	webDriver.findElement(By.name("btnK")).submit();
 	    	
-	    	webDriver.findElements(By.cssSelector("div.srg div.g")).get(0).findElement(By.tagName("a")).click();
+	    	waitElements(webDriver, By.cssSelector("div.srg div.g")).get(0).findElement(By.tagName("a")).click();
     	
 	    	new WebDriverWait(webDriver, 10).until(ExpectedConditions.urlContains("inf."));
     	});
@@ -60,10 +62,16 @@ public class AppTest
     		webDriver.findElement(By.name("q")).sendKeys("AMZN");
     		webDriver.findElement(By.name("btnK")).submit();
     		
-    		String amznPrice = webDriver.findElement(By.tagName("g-card-section")).findElements(By.cssSelector("div.gsrt span")).get(0).getText();
+    		String amznPrice = waitElements(webDriver, By.tagName("g-card-section")).
+    				get(0).findElements(By.cssSelector("div.gsrt span")).get(0).getText();
     		
     		System.out.println(amznPrice);
     	});
+    }
+    
+    private List<WebElement> waitElements(WebDriver webDriver, By by){
+    	(new WebDriverWait(webDriver, 5)).until(ExpectedConditions.visibilityOfElementLocated(by));
+    	return webDriver.findElements(by);
     }
     
     private void runInBrowser(Consumer<WebDriver> action) {
@@ -72,7 +80,8 @@ public class AppTest
 		System.setProperty("webdriver.gecko.driver", geckoDriverPath);
    	
 		FirefoxOptions firefoxOptions = new FirefoxOptions();
-		firefoxOptions.setCapability("marionette", false);
+		firefoxOptions.setCapability("marionette", true);
+		firefoxOptions.setHeadless(false);
 		
     	WebDriver webDriver = new FirefoxDriver(firefoxOptions);
     	
